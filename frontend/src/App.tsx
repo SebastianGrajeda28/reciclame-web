@@ -25,6 +25,7 @@ import UsersPage from './modules/admin/pages/UsersPage';
 import AdminConfigPage from './modules/admin/pages/AdminConfigPage';
 import ForgotPassword from './shared/pages/ForgotPassword';
 import ResetPassword from './shared/pages/ResetPassword';
+import AccessDenied from './shared/pages/AccessDenied';
 
 export default function App() {
   const [sessionExpired, setSessionExpired] = useState(false);
@@ -68,7 +69,7 @@ export default function App() {
                   <Route path="/admin/config" element={<AdminConfigPage />} />
                 </Route>
 
-                <Route path="/unauthorized" element={<p>Acceso denegado. No tienes permisos para ver esta página.</p>} />
+                <Route path="/unauthorized" element={<AccessDenied />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
 
               </Routes>
