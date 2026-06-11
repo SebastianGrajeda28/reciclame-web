@@ -3,6 +3,7 @@ import { CalendarIcon, CheckCircle2, ScanSearch, Scale, Users } from "lucide-rea
 import { Calendar } from "@/components/ui/calendar";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts";
@@ -173,6 +174,7 @@ export default function MetricsDashboard() {
   const [datePreset, setDatePreset] = useState<DatePreset>("last7");
   const [activeTab, setActiveTab] = useState<DashboardTab>("flow");
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const totalDays = useMemo(() => differenceInDaysInclusive(dateFrom, dateTo), [dateFrom, dateTo]);
   const topResidueChartHeight = Math.max(220, (dashboardData?.topResidues.length ?? topResidues.length) * 30 + 20);
 
@@ -187,10 +189,14 @@ export default function MetricsDashboard() {
       .then((data) => {
         if (!cancelled) {
           setDashboardData(data);
+          setLoadError(false);
         }
       })
       .catch((error) => {
-        console.error("[MetricsDashboard] No se pudo cargar dashboard real:", error);
+        if (!cancelled) {
+          console.error("[MetricsDashboard] No se pudo cargar dashboard real:", error);
+          setLoadError(true);
+        }
       });
 
     return () => {
@@ -295,6 +301,29 @@ export default function MetricsDashboard() {
     setDateFrom(new Date(2025, 0, 1));
     setDateTo(base);
   };
+
+  // Hasta tener datos reales se muestra carga, no valores de relleno.
+  if (!dashboardData) {
+    return (
+      <AppPage>
+        <h1 className="text-[3rem] font-extrabold leading-none text-[#0b2f4e]">Métricas</h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Vista general del rendimiento de reciclaje y participacion dentro de la plataforma.
+        </p>
+        {loadError ? (
+          <AppSurface className="mt-8 rounded-2xl bg-[#eef3f8] px-6 py-12 text-center">
+            <p className="text-sm text-red-600">No se pudieron cargar las métricas. Intenta nuevamente.</p>
+          </AppSurface>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-32 w-full rounded-2xl" />
+            ))}
+          </div>
+        )}
+      </AppPage>
+    );
+  }
 
   return (
     <AppPage>
