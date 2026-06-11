@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Eye, EyeOff } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Lock, Eye, EyeOff, Recycle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -38,19 +37,34 @@ const ResetPassword: React.FC = () => {
   };
 
   return (
-    <div className="auth-background">
-      <div className="auth-card">
-        <div className="form-panel">
-          <h2 className="text-3xl font-bold mb-2">Nueva contraseña</h2>
-          <p className="text-gray-500 text-sm mb-6">
-            Elige una contraseña segura para tu cuenta.
-          </p>
+    <main className="relative min-h-[calc(100dvh-5rem)] overflow-hidden bg-[#f7f8f6] px-6 py-6 text-slate-900 md:py-8">
+      <span
+        aria-hidden="true"
+        className="absolute right-0 top-24 h-28 w-28 rounded-full bg-emerald-100/80 md:h-36 md:w-36"
+      />
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <div className="relative mt-1">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <section className="mx-auto flex min-h-full max-w-[1180px] items-center justify-center">
+        <article className="w-full max-w-[420px] rounded-[22px] border border-slate-200/80 bg-[#f8faf9] px-6 py-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)] md:px-10 md:py-10">
+          <header className="mb-8 flex flex-col items-center text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+              <Recycle className="h-6 w-6" />
+            </span>
+            <p className="text-sm font-semibold text-slate-900">Recíclame</p>
+            <h1 className="mt-4 max-w-[260px] text-[28px] font-semibold leading-8 text-slate-900">
+              Nueva contraseña
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Elige una contraseña segura para tu cuenta.
+            </p>
+          </header>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <label htmlFor="password" className="block space-y-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500">
+                Contraseña
+              </span>
+              <span className="relative block">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -58,23 +72,25 @@ const ResetPassword: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-10 bg-gray-100"
+                  className="h-11 rounded-lg border-slate-200 bg-white pl-9 pr-10 text-sm shadow-none placeholder:text-slate-400 focus-visible:ring-emerald-500"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                   aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
-              </div>
-            </div>
+              </span>
+            </label>
 
-            <div>
-              <Label htmlFor="confirm">Confirmar contraseña</Label>
-              <div className="relative mt-1">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <label htmlFor="confirm" className="block space-y-1.5">
+              <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500">
+                Confirmar contraseña
+              </span>
+              <span className="relative block">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <Input
                   id="confirm"
                   type={showPassword ? "text" : "password"}
@@ -82,34 +98,22 @@ const ResetPassword: React.FC = () => {
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   required
-                  className="pl-10 bg-gray-100"
+                  className="h-11 rounded-lg border-slate-200 bg-white pl-9 text-sm shadow-none placeholder:text-slate-400 focus-visible:ring-emerald-500"
                 />
-              </div>
-            </div>
+              </span>
+            </label>
 
             <Button
               type="submit"
-              className="w-full py-3 bg-(--brand) text-white rounded-full hover:bg-(--brand-light) transition"
+              className="mt-2 h-10 w-full rounded-lg bg-[#0f2f45] text-sm font-semibold text-white hover:bg-[#143a53]"
               disabled={loading}
             >
               {loading ? "Guardando…" : "Guardar contraseña"}
             </Button>
           </form>
-        </div>
-
-        <div className="media-panel">
-          <video src={`${import.meta.env.VITE_BACKEND_URL_MEDIA}/login.mp4`} autoPlay loop muted />
-          <div className="media-overlay">
-            <h2 className="text-5xl md:text-6xl font-extrabold text-white mb-4">
-              Cada amigo es una nueva aventura.
-            </h2>
-            <p className="text-xl md:text-2xl font-bold text-white/90 mb-6">
-              Conectémonos
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+        </article>
+      </section>
+    </main>
   );
 };
 
