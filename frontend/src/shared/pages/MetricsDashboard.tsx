@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarIcon, CheckCircle2, ScanSearch, Scale, Users } from "lucide-react";
+import { CalendarIcon, CheckCircle2, RefreshCw, ScanSearch, Scale, Users } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, Line, LineChart, Pie, PieChart, XAxis, YAxis } from "recharts";
-import { fetchDashboard, type DashboardResponse } from "@/modules/dashboard/services/dashboardService";
+import { fetchDashboard, clearDashboardCache, type DashboardResponse } from "@/modules/dashboard/services/dashboardService";
 import { useUser } from "../context/UserContext";
 import { AppPage, AppSurface } from "../components/AppPage";
 
@@ -175,8 +175,21 @@ export default function MetricsDashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>("flow");
   const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const totalDays = useMemo(() => differenceInDaysInclusive(dateFrom, dateTo), [dateFrom, dateTo]);
   const topResidueChartHeight = Math.max(220, (dashboardData?.topResidues.length ?? topResidues.length) * 30 + 20);
+
+  const resetAndSetDateFrom = (date: Date) => {
+    setDashboardData(null);
+    setLoadError(false);
+    setDateFrom(date);
+  };
+
+  const resetAndSetDateTo = (date: Date) => {
+    setDashboardData(null);
+    setLoadError(false);
+    setDateTo(date);
+  };
 
   useEffect(() => {
     if (!session?.access_token) {
@@ -202,7 +215,7 @@ export default function MetricsDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [session?.access_token, dateFrom, dateTo]);
+  }, [session?.access_token, dateFrom, dateTo, reloadKey]);
 
   const renderedKpis = useMemo(
     () =>
@@ -287,19 +300,19 @@ export default function MetricsDashboard() {
     const base = new Date(2026, 5, 11);
 
     if (preset === "last7") {
-      setDateFrom(addDays(base, -6));
-      setDateTo(base);
+      resetAndSetDateFrom(addDays(base, -6));
+      resetAndSetDateTo(base);
       return;
     }
 
     if (preset === "last30") {
-      setDateFrom(addDays(base, -29));
-      setDateTo(base);
+      resetAndSetDateFrom(addDays(base, -29));
+      resetAndSetDateTo(base);
       return;
     }
 
-    setDateFrom(new Date(2025, 0, 1));
-    setDateTo(base);
+    resetAndSetDateFrom(new Date(2025, 0, 1));
+    resetAndSetDateTo(base);
   };
 
   // Hasta tener datos reales se muestra carga, no valores de relleno.
@@ -315,11 +328,18 @@ export default function MetricsDashboard() {
             <p className="text-sm text-red-600">No se pudieron cargar las métricas. Intenta nuevamente.</p>
           </AppSurface>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <Skeleton key={index} className="h-32 w-full rounded-2xl" />
-            ))}
-          </div>
+          <>
+            <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-32 w-full rounded-2xl" />
+              ))}
+            </div>
+            <div className="mt-5 grid gap-4 xl:grid-cols-2">
+              <Skeleton className="h-[420px] w-full rounded-2xl" />
+              <Skeleton className="h-[420px] w-full rounded-2xl" />
+            </div>
+            <Skeleton className="mt-5 h-64 w-full rounded-2xl" />
+          </>
         )}
       </AppPage>
     );
@@ -401,7 +421,7 @@ export default function MetricsDashboard() {
                       <Calendar
                         mode="single"
                         selected={dateFrom}
-                        onSelect={(date) => date && setDateFrom(date)}
+                        onSelect={(date) => date && resetAndSetDateFrom(date)}
                       />
                     </PopoverContent>
                   </Popover>
@@ -423,7 +443,7 @@ export default function MetricsDashboard() {
                       <Calendar
                         mode="single"
                         selected={dateTo}
-                        onSelect={(date) => date && setDateTo(date)}
+                        onSelect={(date) => date && resetAndSetDateTo(date)}
                         disabled={(date) => date < dateFrom}
                       />
                     </PopoverContent>
@@ -432,6 +452,14 @@ export default function MetricsDashboard() {
               </div>
             </PopoverContent>
           </Popover>
+          <button
+            type="button"
+            onClick={() => { clearDashboardCache(); setDashboardData(null); setLoadError(false); setReloadKey((k) => k + 1); }}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#26B0CF] bg-white text-[#26B0CF] transition hover:bg-[#26B0CF] hover:text-white"
+            aria-label="Actualizar métricas"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
         </div>
       </div>
 

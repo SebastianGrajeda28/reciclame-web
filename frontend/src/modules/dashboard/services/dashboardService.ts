@@ -1,5 +1,11 @@
 import { buildBackendUrl } from "@/lib/backend-url";
 
+const cache = new Map<string, DashboardResponse>();
+
+export function clearDashboardCache() {
+  cache.clear();
+}
+
 export type DashboardResponse = {
   filters: {
     start: string;
@@ -44,6 +50,10 @@ export async function fetchDashboard(
   start: string,
   end: string
 ): Promise<DashboardResponse> {
+  const key = `${start}|${end}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+
   const url = new URL(buildBackendUrl("/api/dashboard"));
   url.searchParams.set("start", start);
   url.searchParams.set("end", end);
@@ -58,5 +68,7 @@ export async function fetchDashboard(
     throw new Error(`No se pudo cargar el dashboard (${res.status})`);
   }
 
-  return res.json();
+  const data: DashboardResponse = await res.json();
+  cache.set(key, data);
+  return data;
 }
