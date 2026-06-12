@@ -22,7 +22,13 @@ export default function FunFactRow({
           {fact.wasteTypeName || "—"}
         </span>
       </TableCell>
-      <TableCell className={fact.isActive ? "whitespace-normal text-sm leading-relaxed text-slate-700" : "whitespace-normal text-sm leading-relaxed text-slate-700 opacity-50"}>
+      <TableCell
+        className={
+          fact.isActive
+            ? "whitespace-normal text-sm leading-relaxed text-slate-700"
+            : "whitespace-normal text-sm leading-relaxed text-slate-700 opacity-50"
+        }
+      >
         {fact.text}
       </TableCell>
       <TableCell className="text-center">
