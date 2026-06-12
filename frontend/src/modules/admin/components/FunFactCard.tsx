@@ -38,8 +38,6 @@ export default function FunFactCard({
   const [editText, setEditText] = useState(fact.text);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  const wasteTypeName =
-    wasteTypes.find((type) => type.id === fact.wasteTypeId)?.name ?? "Sin tipo";
   const canSave = editWasteTypeId.trim().length > 0 && editText.trim().length > 0;
 
   function cancelEdit() {
@@ -54,19 +52,16 @@ export default function FunFactCard({
         await onUpdate(fact.id, { text: editText.trim(), wasteTypeId: editWasteTypeId });
         setIsEditing(false);
       }
-
       if (pendingAction === "deactivate") {
         await onChangeStatus(fact.id, false);
         setIsEditing(false);
       }
-
       if (pendingAction === "restore") {
         await onChangeStatus(fact.id, true);
       }
-
       setPendingAction(null);
     } catch {
-      // El error se notifica desde la mutación.
+      // error notified from mutation
     }
   }
 
@@ -86,15 +81,13 @@ export default function FunFactCard({
 
   return (
     <>
-      <article
-        className={`rounded-2xl bg-[#eef3f8] px-5 py-5 shadow-[0_3px_0_rgba(15,23,42,0.08)] ${fact.isActive ? "" : "opacity-80"}`}
-      >
+      <article className={`group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md ${!fact.isActive ? "opacity-60" : ""}`}>
         {isEditing ? (
           <div className="space-y-4">
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-[#0b2f4e]">Tipo de residuo</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Tipo de residuo</span>
               <Select value={editWasteTypeId} onValueChange={setEditWasteTypeId} disabled={isSaving}>
-                <SelectTrigger className="w-full border-[#d9dee2] bg-white">
+                <SelectTrigger className="w-full border-slate-200 bg-white">
                   <SelectValue placeholder="Selecciona un tipo de residuo" />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
@@ -108,78 +101,72 @@ export default function FunFactCard({
             </label>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-[#0b2f4e]">Texto del fun fact</span>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Texto</span>
               <Textarea
                 value={editText}
-                onChange={(event) => setEditText(event.target.value)}
+                onChange={(e) => setEditText(e.target.value)}
                 disabled={isSaving}
-                className="min-h-24 resize-none border-[#d9dee2] bg-white shadow-none focus-visible:ring-emerald-500"
+                className="min-h-24 resize-none border-slate-200 bg-white shadow-none focus-visible:ring-emerald-500"
               />
             </label>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
+                size="sm"
                 className="bg-[#18b566] text-white hover:bg-[#129a56]"
                 disabled={!canSave || isSaving}
                 onClick={() => setPendingAction("edit")}
               >
-                <Check className="h-4 w-4" />
-                Confirmar cambio
+                <Check className="h-3.5 w-3.5" />
+                Confirmar
               </Button>
-              <Button type="button" variant="outline" disabled={isSaving} onClick={cancelEdit}>
-                <X className="h-4 w-4" />
+              <Button type="button" size="sm" variant="outline" disabled={isSaving} onClick={cancelEdit}>
+                <X className="h-3.5 w-3.5" />
                 Cancelar
               </Button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="min-w-0">
-              <p className="text-lg leading-6 text-slate-900">{fact.text}</p>
-              <span className="mt-3 inline-flex rounded-full bg-[#d7f5e7] px-3 py-1 text-xs font-medium text-[#0b7a4b]">
-                Tipo de residuo: {wasteTypeName}
-              </span>
-            </div>
+          <>
+            <span className="absolute left-4 top-3 text-5xl font-serif leading-none text-slate-100 select-none" aria-hidden="true">"</span>
+            <p className="relative z-10 pt-4 text-sm leading-relaxed text-slate-700">{fact.text}</p>
 
-            <div className="flex shrink-0 items-center gap-3">
+            <div className="mt-4 flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
               {fact.isActive ? (
                 <>
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    className="gap-2 border-[#9bb7cf] text-[#0b2f4e]"
                     disabled={isSaving}
                     onClick={() => setIsEditing(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Pencil className="h-3 w-3" />
                     Editar
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    variant="outline"
-                    className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                     disabled={isSaving}
                     onClick={() => setPendingAction("deactivate")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-100 bg-white px-3 py-1.5 text-xs font-medium text-red-500 transition hover:border-red-200 hover:bg-red-50 disabled:opacity-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                     Desactivar
-                  </Button>
+                  </button>
                 </>
               ) : (
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  className="gap-2 border-[#9bb7cf] text-[#0b2f4e]"
                   disabled={isSaving}
                   onClick={() => setPendingAction("restore")}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
                 >
-                  <RotateCcw className="h-4 w-4" />
+                  <RotateCcw className="h-3 w-3" />
                   Restaurar
-                </Button>
+                </button>
               )}
             </div>
-          </div>
+          </>
         )}
       </article>
 
