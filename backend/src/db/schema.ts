@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
   isActive: boolean("is_active").notNull().default(true),
+  registrationMethod: text("registration_method").notNull().default("web"),
 });
 
 export type AppUser = typeof users.$inferSelect;

@@ -37,11 +37,17 @@ app.get("/:id", requireRole("ADMIN"), async (c) => {
 
 // POST /api/users/provision — crea en Supabase Auth, public.users y asigna rol
 app.post("/provision", requireRole("ADMIN"), async (c) => {
-  const body = await c.req.json<{ email: string; password: string; name: string; roleName: string }>();
-  const { email, password, name, roleName } = body;
+  const body = await c.req.json<{ email: string; password: string; name: string; roleName: string; registrationMethod?: string }>();
+  const { email, password, name, roleName, registrationMethod = "sysadmin" } = body;
 
   if (!email || !password || !roleName) {
     return c.json({ error: "email, password y roleName son requeridos" }, 400);
+  }
+
+  // Validate registration method
+  const allowedRegistrationMethods = ["google", "sysadmin", "web"];
+  if (!allowedRegistrationMethods.includes(registrationMethod)) {
+    return c.json({ error: "registrationMethod debe ser 'google', 'sysadmin' o 'web'" }, 400);
   }
 
   // 1. Crear en Supabase Auth
@@ -59,7 +65,7 @@ app.post("/provision", requireRole("ADMIN"), async (c) => {
   const newUserId = authData.user.id;
 
   // 2. Insertar en public.users (ignora si un trigger ya lo hizo)
-  await db.insert(users).values({ id: newUserId, email }).onConflictDoNothing();
+  await db.insert(users).values({ id: newUserId, email, registrationMethod }).onConflictDoNothing();
 
   // 3. Buscar rol y asignar
   const [role] = await db.select().from(roles).where(eq(roles.name, roleName));
